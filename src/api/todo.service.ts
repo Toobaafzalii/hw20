@@ -4,23 +4,11 @@ export const createNewTask = async (data: INewTask) => {
   await client.collection("todos").create(data);
 };
 
-export const fetchTodoTasks = async (): Promise<TodoTasksResponse> => {
+export const fetchTasks = async (
+  status: IStatus
+): Promise<TodoTasksResponse> => {
   const response = await client.collection("todos").getList<ITask>(1, 50, {
-    filter: 'status = "TODO"',
-  });
-  return response;
-};
-
-export const fetchInProgressTasks = async (): Promise<TodoTasksResponse> => {
-  const response = await client.collection("todos").getList<ITask>(1, 50, {
-    filter: 'status = "IN_PROGRESS"',
-  });
-  return response;
-};
-
-export const fetchCompeletedTasks = async (): Promise<TodoTasksResponse> => {
-  const response = await client.collection("todos").getList<ITask>(1, 50, {
-    filter: 'status = "DONE"',
+    filter: `status = "${status}"`,
   });
   return response;
 };

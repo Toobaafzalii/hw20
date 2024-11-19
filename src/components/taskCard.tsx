@@ -1,9 +1,12 @@
 "use client";
 import { useState } from "react";
 import EditTaskModal from "./editTaskModal";
-import { FcMediumPriority } from "react-icons/fc";
-import { FcLowPriority } from "react-icons/fc";
-import { FcHighPriority } from "react-icons/fc";
+import ConfirmModal from "./confrimModal";
+import {
+  FcMediumPriority,
+  FcLowPriority,
+  FcHighPriority,
+} from "react-icons/fc";
 
 interface ITaskCardProps {
   item: ITask;
@@ -13,13 +16,23 @@ interface ITaskCardProps {
 export default function TaskCard(props: ITaskCardProps) {
   const item = props.item;
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const onDeleteTask = (id: string) => {
     props.onDelete(id);
   };
 
-  const handleClose = () => {
+  const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
+  };
+
+  const handleCloseConfirmModal = () => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDeleteTask(item.id);
+    setIsConfirmModalOpen(false);
   };
 
   return (
@@ -59,13 +72,22 @@ export default function TaskCard(props: ITaskCardProps) {
         </button>
         <button
           className="bg-red-500 hover:bg-red-400 w-full py-1.5 px-2 text-white rounded-md font-medium shadow-md"
-          onClick={() => onDeleteTask(item.id)}
+          onClick={() => setIsConfirmModalOpen(true)}
         >
           Delete
         </button>
       </div>
+
       {isEditModalOpen && (
-        <EditTaskModal item={props.item} onClose={handleClose} />
+        <EditTaskModal item={props.item} onClose={handleCloseEditModal} />
+      )}
+
+      {isConfirmModalOpen && (
+        <ConfirmModal
+          message="Sure you want to delete this task?"
+          onClose={handleCloseConfirmModal}
+          onLogOut={handleDeleteConfirm}
+        />
       )}
     </div>
   );

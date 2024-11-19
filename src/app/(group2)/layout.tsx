@@ -9,9 +9,9 @@ import { useState } from "react";
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pb = new PocketBase("https://tooba-todo.pockethost.io");
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
-  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [isConfrimModalOpen, setIsConfrimModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -25,16 +25,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     pb.authStore.clear();
   };
 
-  const onTasksClick = () => {
-    setIsDropDownOpen((prev) => !prev);
+  const closeMenu = () => {
+    setIsMenuOpen(false);
   };
 
-  const handleClose = () => {
-    setIsNewModalOpen(false);
-  };
-
-  const handleLogOutClose = () => {
-    setIsConfrimModalOpen(false);
+  const closeDropdown = () => {
+    setIsDropDownOpen(false);
   };
 
   const menuItems = [
@@ -50,6 +46,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       action: () => router.push("/compeleted"),
       path: "/compeleted",
     },
+    { label: "LogOut", action: handleLogOutClick, path: null },
   ];
 
   const getNavbarColor = () => {
@@ -60,7 +57,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="w-full relative">
+    <div className="relative w-full">
+      {/* Navbar */}
       <div
         className={`h-20 ${getNavbarColor()} flex justify-between items-center px-10 shadow-lg`}
       >
@@ -68,31 +66,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           Task Manager
         </span>
 
-        <button className="block sm:hidden text-white text-3xl">&#9776;</button>
+        {/* Hamburger Menu Button */}
+        <button
+          className="block sm:hidden text-white text-3xl"
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+        >
+          &#9776;
+        </button>
 
-        {isMenuOpen && (
-          <div className="absolute top-20 left-0 w-full bg-gray-50 shadow-md xs:block sm:hidden flex flex-col gap-2 px-6 py-3">
-            <button
-              className="py-1.5 px-3 text-lg font-semibold text-gray-800 bg-gray-50 rounded-md shadow-md hover:bg-white hover:shadow-inner"
-              onClick={() => router.push("/")}
-            >
-              Home
-            </button>
-            <button
-              className="py-1.5 px-3 text-lg font-semibold text-gray-800 bg-gray-50 rounded-md shadow-md hover:bg-white hover:shadow-inner"
-              onClick={onTasksClick}
-            >
-              Tasks
-            </button>
-            <button
-              className="py-1.5 px-3 text-lg font-semibold text-gray-800 bg-gray-50 rounded-md shadow-md hover:bg-white hover:shadow-inner"
-              onClick={handleLogOutClick}
-            >
-              LogOut
-            </button>
-          </div>
-        )}
-
+        {/* Full Menu for Larger Screens */}
         <div className="hidden sm:flex justify-between items-center gap-y-6">
           <button
             className="py-1.5 px-3 text-lg mx-1 font-semibold text-gray-800 bg-gray-50 rounded-md shadow-md hover:bg-white hover:shadow-inner"
@@ -100,12 +82,35 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             Home
           </button>
-          <button
-            className="py-1.5 px-3 text-lg mx-1 font-semibold text-gray-800 bg-gray-50 rounded-md shadow-md hover:bg-white hover:shadow-inner"
-            onClick={onTasksClick}
-          >
-            Tasks
-          </button>
+          <div className="relative">
+            <button
+              className="py-1.5 px-3 text-lg mx-1 font-semibold text-gray-800 bg-gray-50 rounded-md shadow-md hover:bg-white hover:shadow-inner"
+              onClick={() => setIsDropDownOpen((prev) => !prev)}
+            >
+              Tasks
+            </button>
+            {isDropDownOpen && (
+              <div
+                className="absolute top-full mt-2 left-0 w-88 bg-white shadow-lg rounded-lg z-40 "
+                onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside
+              >
+                {menuItems.slice(0, 4).map((item, index) => (
+                  <div
+                    key={index}
+                    className={`py-2 px-3 text-lg font-semibold text-gray-800 rounded-md cursor-pointer hover:bg-gray-100 text-nowrap ${
+                      item.path === pathname ? "bg-gray-200" : ""
+                    }`}
+                    onClick={() => {
+                      closeDropdown();
+                      item.action();
+                    }}
+                  >
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             className="py-1.5 px-3 text-lg mx-1 font-semibold text-gray-800 bg-gray-50 rounded-md shadow-md hover:bg-white hover:shadow-inner"
             onClick={handleLogOutClick}
@@ -115,32 +120,47 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
+      {/* Children */}
       {children}
 
-      {isDropDownOpen && (
-        <div
-          className="absolute top-20 right-[0.5%] flex flex-col justify-between items-start bg-indigo-200 w-40 rounded-lg shadow-xl"
-          onClick={() => setIsDropDownOpen(false)}
-        >
-          {menuItems.map((item, index) => (
-            <div
-              key={index}
-              className={`p-2.5 w-full border-b-2 border-b-gray-400 cursor-pointer ${
-                item.path === pathname ? "bg-gray-200" : "hover:bg-gray-300"
-              }`}
-              onClick={item.path !== pathname ? item.action : undefined}
-            >
-              {item.label}
-            </div>
-          ))}
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="absolute top-20 left-0 w-full h-full bg-gray-800 bg-opacity-50 z-30">
+          <div
+            className="absolute top-0 left-0 w-full bg-white shadow-lg rounded-lg p-6 z-40"
+            onClick={(e) => e.stopPropagation()} // Prevents closing when clicking inside the menu
+          >
+            {menuItems.map((item, index) => (
+              <div
+                key={index}
+                className={`py-2 px-3 text-lg font-semibold text-gray-800 rounded-md cursor-pointer hover:bg-gray-100 ${
+                  item.path === pathname ? "bg-gray-200" : ""
+                }`}
+                onClick={() => {
+                  closeMenu();
+                  item.action();
+                }}
+              >
+                {item.label}
+              </div>
+            ))}
+          </div>
+          {/* Overlay Click to Close */}
+          <div
+            className="absolute top-0 left-0 w-full h-full z-20"
+            onClick={closeMenu}
+          ></div>
         </div>
       )}
 
-      {isNewModalOpen && <NewTaskModal onClose={handleClose} />}
+      {/* Modals */}
+      {isNewModalOpen && (
+        <NewTaskModal onClose={() => setIsNewModalOpen(false)} />
+      )}
       {isConfrimModalOpen && (
         <ConfrimModal
           message="Sure you want to log out?"
-          onClose={handleLogOutClose}
+          onClose={() => setIsConfrimModalOpen(false)}
           onLogOut={handleLogOut}
         />
       )}

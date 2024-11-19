@@ -25,3 +25,5 @@ interface TodoTasksResponse {
   totalItems: number;
   items: ITask[];
 }
+
+type IStatus = "DONE" | "IN_PROGRESS" | "TODO";

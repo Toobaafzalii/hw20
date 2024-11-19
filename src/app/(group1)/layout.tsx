@@ -17,7 +17,7 @@ export default function RootLayout({
     <div className="w-full">
       <div
         className={`w-full h-20 ${
-          isAuthPage ? "bg-blue-300" : "bg-orange-300"
+          isAuthPage ? "bg-blue-300" : "bg-orange-300 border-b-2"
         } flex justify-between items-center px-10 shadow-lg`}
       >
         <span className="underline decoration-wavy text-3xl font-bold text-white">
